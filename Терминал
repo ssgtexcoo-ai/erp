@@ -1,0 +1,6 @@
+cd /Users/damirahmetkali/Desktop/codeERP
+git init
+git remote add origin https://github.com/ssgtexcoo-ai/erp.git
+git add -A
+git commit -m "init: SAMRUQ ERP v1"
+git push -u origin main
