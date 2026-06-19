@@ -90,10 +90,11 @@
 - Диаграмма Ганта с фильтрами по статусу, ответственному, дате и поиску
 - Канбан с 5 колонками и полным редактором задач
 - Дашборд директора с ключевыми метриками и прогрессом этапов объектов
-- GitHub Actions CI (lint, typecheck, build, интеграционные тесты)
+- GitHub Actions CI (typecheck, lint, build) — проходит на каждый push/PR в main
+- Авто-мерж PR с меткой `bymax-automerge` (workflow `.github/workflows/auto-merge.yml`)
+- CRM pipeline-доска (amoCRM-стиль): drag & drop, SLA-индикаторы, статистика воронки
+- Диаграмма Ганта (Битрикс-стиль): двухпанельный таймлайн, линия сегодня, тултипы, свернуть/развернуть задачи
 - Telegram уведомления при завершении workflow (нужны секреты `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`)
-- Авто-мерж PR с меткой `bymax-automerge`
-- Ночной scheduled workflow для авто-fix lint/format
 
 ### Следующие шаги
 1. Создать проект Supabase, добавить секреты в репозиторий GitHub
