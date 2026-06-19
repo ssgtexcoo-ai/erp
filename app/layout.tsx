@@ -1,12 +1,12 @@
 import './globals.css';
 import type { Metadata } from 'next';
-import { SiteHeader } from '@/components/site-header';
+import { AppShell } from '@/components/app-shell';
 import { AuthProvider } from '@/components/auth-context';
 
 export const metadata: Metadata = {
   title: 'SAMRUQ ERP',
   description: 'ERP для управления продажами и строительством',
-  themeColor: '#0f172a',
+  themeColor: '#090e1a',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -14,8 +14,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="ru">
       <body className="min-h-screen text-[var(--samruq-text)]">
         <AuthProvider>
-          <SiteHeader />
-          {children}
+          <AppShell>{children}</AppShell>
         </AuthProvider>
       </body>
     </html>
