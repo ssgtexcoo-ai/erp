@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test:integration": "node --test tests/integration",
+    "test:integration": "node --test tests/integration/*.test.mjs",
     "test": "npm run test:integration"
   },
   "dependencies": {
