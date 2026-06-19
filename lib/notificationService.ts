@@ -18,7 +18,8 @@ export async function fetchNotifications() {
     };
   }
 
-  const userMap = new Map((users ?? []).map((user) => [user.id, user.full_name]));
+  const userMap = new Map<number, string>();
+  ((users ?? []) as Array<{ id: number; full_name: string }>).forEach((u) => userMap.set(u.id, u.full_name));
 
   const enrichedNotifications: NotificationWithUser[] = (notifications ?? []).map((row: any) => ({
     id: row.id,

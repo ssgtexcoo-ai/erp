@@ -3,7 +3,7 @@ import type { EmployeeSummary, Lead } from '@/lib/types';
 export const AUTO_ASSIGN_MODES = ['round_robin', 'load_balance', 'manual'] as const;
 export type AutoAssignMode = typeof AUTO_ASSIGN_MODES[number];
 
-export function getLeadSlaStatus(createdAt: string) {
+export function getLeadSlaStatus(createdAt: string): 'green' | 'yellow' | 'red' {
   const created = new Date(createdAt).getTime();
   const now = Date.now();
   const minutes = Math.floor((now - created) / 1000 / 60);

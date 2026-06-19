@@ -63,7 +63,7 @@ export interface Deal {
   leadId: number;
   customerName: string;
   amount: number;
-  stage: LeadStatus;
+  stage: string;
   progressPercent: number;
   assignedTo: number | null;
   createdAt: string;

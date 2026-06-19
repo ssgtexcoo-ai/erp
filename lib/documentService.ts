@@ -34,14 +34,17 @@ export async function fetchDocuments(): Promise<DocumentFetchResult> {
       documents: [] as DocumentWithDetails[],
       categories: [] as DocumentMeta[],
       projects: [] as DocumentMeta[],
-      users: [] as Array<{ id: number; full_name: string }>[],
+      users: [] as Array<{ id: number; full_name: string }>,
       error: documentsError || categoriesError || projectsError || usersError,
     };
   }
 
-  const categoryMap = new Map((categories ?? []).map((category) => [category.id, category.name]));
-  const projectMap = new Map((projects ?? []).map((project) => [project.id, project.name]));
-  const userMap = new Map((users ?? []).map((user) => [user.id, user.full_name]));
+  const categoryMap = new Map<number, string>();
+  ((categories ?? []) as Array<{ id: number; name: string }>).forEach((c) => categoryMap.set(c.id, c.name));
+  const projectMap = new Map<number, string>();
+  ((projects ?? []) as Array<{ id: number; name: string }>).forEach((p) => projectMap.set(p.id, p.name));
+  const userMap = new Map<number, string>();
+  ((users ?? []) as Array<{ id: number; full_name: string }>).forEach((u) => userMap.set(u.id, u.full_name));
 
   const enrichedDocuments: DocumentWithDetails[] = (documents ?? []).map((row: any) => ({
     id: row.id,

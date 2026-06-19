@@ -88,6 +88,7 @@ export default function ProjectsPage() {
 
   const saveProject = async () => {
     if (!editingProject && !isCreatingProject) return;
+    const currentProject = editingProject;
 
     const name = editName.trim();
     const clientName = editClientName.trim();
@@ -147,7 +148,8 @@ export default function ProjectsPage() {
       return;
     }
 
-    const { error: updateError } = await updateProject(editingProject.id, {
+    if (!currentProject) return;
+    const { error: updateError } = await updateProject(currentProject.id, {
       name,
       clientName,
       budget,
@@ -166,7 +168,7 @@ export default function ProjectsPage() {
 
     setProjects((current) =>
       current.map((project) =>
-        project.id === editingProject.id
+        project.id === currentProject.id
           ? {
               ...project,
               name,

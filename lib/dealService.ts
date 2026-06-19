@@ -34,8 +34,10 @@ export async function fetchDeals() {
     };
   }
 
-  const userMap = new Map((users ?? []).map((user) => [user.id, user.full_name]));
-  const stageMap = new Map((stages ?? []).map((stage) => [stage.id, stage.name]));
+  const userMap = new Map<number, string>();
+  ((users ?? []) as Array<{ id: number; full_name: string }>).forEach((u) => userMap.set(u.id, u.full_name));
+  const stageMap = new Map<number, string>();
+  ((stages ?? []) as Array<{ id: number; name: string }>).forEach((s) => stageMap.set(s.id, s.name));
 
   const enrichedDeals: DealWithDetails[] = (deals ?? []).map((row: any) => ({
     id: row.id,

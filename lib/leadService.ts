@@ -41,8 +41,10 @@ export async function fetchLeads(): Promise<LeadFetchResult> {
     };
   }
 
-  const sourceMap = new Map((sources ?? []).map((source) => [source.id, source.name]));
-  const userMap = new Map((users ?? []).map((user) => [user.id, user.full_name]));
+  const sourceMap = new Map<number, string>();
+  ((sources ?? []) as Array<{ id: number; name: string }>).forEach((s) => sourceMap.set(s.id, s.name));
+  const userMap = new Map<number, string>();
+  ((users ?? []) as Array<{ id: number; full_name: string }>).forEach((u) => userMap.set(u.id, u.full_name));
 
   const enrichedLeads: LeadWithDetails[] = (leads ?? []).map((row: any) => ({
     id: row.id,

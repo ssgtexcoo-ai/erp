@@ -71,6 +71,7 @@ export default function DocumentsPage() {
 
   const saveDocument = async () => {
     if (!editingDocument && !isAddingDocument) return;
+    const currentDocument = editingDocument;
     const name = editName.trim();
     const fileUrl = editFileUrl.trim();
 
@@ -116,7 +117,8 @@ export default function DocumentsPage() {
       return;
     }
 
-    const { error: updateError } = await updateDocument(editingDocument.id, {
+    if (!currentDocument) return;
+    const { error: updateError } = await updateDocument(currentDocument.id, {
       name,
       fileUrl,
       categoryId: editCategoryId,
@@ -132,7 +134,7 @@ export default function DocumentsPage() {
 
     setDocuments((current) =>
       current.map((document) =>
-        document.id === editingDocument.id
+        document.id === currentDocument.id
           ? {
               ...document,
               name,

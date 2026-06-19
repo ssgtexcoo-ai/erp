@@ -47,13 +47,14 @@ export async function fetchProjects() {
   }
 
   const stageGroups = new Map<number, Array<ProjectStageSummary>>();
-  (projectStages ?? []).forEach((stage) => {
+  ((projectStages ?? []) as ProjectStageSummary[]).forEach((stage: ProjectStageSummary) => {
     const items = stageGroups.get(stage.project_id) ?? [];
     items.push(stage);
     stageGroups.set(stage.project_id, items);
   });
 
-  const userMap = new Map((users ?? []).map((user) => [user.id, user.full_name]));
+  const userMap = new Map<number, string>();
+  ((users ?? []) as Array<{ id: number; full_name: string }>).forEach((u) => userMap.set(u.id, u.full_name));
 
   const enrichedProjects: ProjectWithDetails[] = projectRows.map((row) => {
     const stages = stageGroups.get(row.id) ?? [];
@@ -74,7 +75,7 @@ export async function fetchProjects() {
       endDate: row.end_date,
       status: row.status,
       profitEstimate: row.profit_estimate,
-      responsibleName: row.responsible_id ? userMap.get(row.responsible_id) ?? `#${row.responsible_id}` : 'Не назначен',
+      responsibleName: row.responsible_id ? (userMap.get(Number(row.responsible_id)) ?? String(row.responsible_id)) : 'Не назначен',
       stageProgress,
       stageCount,
       completedStages,

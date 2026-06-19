@@ -1,0 +1,82 @@
+name: Scheduled Auto-fix and Checks
+
+on:
+  schedule:
+    - cron: '0 3 * * *' # каждый день в 03:00 UTC
+  workflow_dispatch: {}
+
+jobs:
+  autofix:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type check (no emit)
+        run: npx tsc --noEmit || true
+
+      - name: Run lint (report)
+        run: npm run lint || true
+
+      - name: Attempt auto-fix with eslint
+        run: |
+          # try to auto-fix lintable problems (syntax, unused vars, formatting suggestions)
+          npx eslint . --ext .ts,.tsx --fix --fix-type problem --fix-type suggestion || true
+
+      - name: Attempt formatting with Prettier
+        run: |
+          npx prettier --write . || true
+
+      - name: Attempt to fix imports and organize
+        run: |
+          # try to organize/import fixes via eslint plugins (will be no-op if plugins not configured)
+          npx eslint . --ext .ts,.tsx --rule '{"sort-imports": ["error", {"ignoreDeclarationSort": true}]}' --fix || true
+
+      - name: Try simple TypeScript reshapes
+        run: |
+          # run tsc to surface type errors; some auto-tools could be added here in future
+          npx tsc --noEmit || true
+
+      - name: Show git status
+        run: |
+          git status --porcelain
+
+      - name: Setup SSH for pushing (if DEPLOY_KEY provided)
+        if: ${{ secrets.DEPLOY_KEY != '' }}
+        uses: webfactory/ssh-agent@v0.8.1
+        with:
+          ssh-private-key: ${{ secrets.DEPLOY_KEY }}
+
+      - name: Configure git and push branch via SSH (if DEPLOY_KEY provided)
+        if: ${{ secrets.DEPLOY_KEY != '' }}
+        run: |
+          git config --global user.name "bymax-bot"
+          git config --global user.email "bymax@local"
+          git remote set-url origin git@github.com:${{ github.repository }}.git
+          BRANCH=bymax/auto-fix-${{ github.run_id }}
+          git checkout -b $BRANCH
+          git add -A
+          git commit -m "bymax: auto-fix lint/format" || echo "no changes to commit"
+          git push origin HEAD || echo "push failed"
+
+      - name: Create pull request if changes
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "bymax: auto-fix lint/format"
+          title: "bymax: auto-fix lint/format"
+          body: |
+            Авто-исправления, применённые агентом bymax (lint/format).
+            Проверьте изменения и смержите при согласии.
+          branch: "bymax/auto-fix-${{ github.run_id }}"

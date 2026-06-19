@@ -84,6 +84,7 @@ export default function KanbanPage() {
 
   const saveTask = async () => {
     if (!editingTask && !isCreatingTask) return;
+    const currentTask = editingTask;
     const title = editTitle.trim();
     const description = editDescription.trim();
 
@@ -130,7 +131,8 @@ export default function KanbanPage() {
       return;
     }
 
-    const { error: updateError } = await updateTask(editingTask.id, {
+    if (!currentTask) return;
+    const { error: updateError } = await updateTask(currentTask.id, {
       status: editStatus,
       assignedTo: editAssignedTo,
       priority: editPriority as 'low' | 'medium' | 'high' | null,
@@ -147,7 +149,7 @@ export default function KanbanPage() {
 
     setTasks((current) =>
       current.map((task) =>
-        task.id === editingTask.id
+        task.id === currentTask.id
           ? {
               ...task,
               status: editStatus,
@@ -317,7 +319,7 @@ export default function KanbanPage() {
                     <option value="">Не назначен</option>
                     {taskUsers.map((user) => (
                       <option key={user.id} value={user.id} className="bg-slate-950 text-slate-100">
-                        {user.fullName}
+                        {user.full_name}
                       </option>
                     ))}
                   </select>

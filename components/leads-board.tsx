@@ -88,7 +88,7 @@ export function LeadsBoard() {
       }
     }
 
-    setLeads(updatedLeads);
+    setLeads(updatedLeads as typeof leads);
     setLastIndex(nextIndex);
     const assignedCount = updatedLeads.filter((lead, index) => !leads[index].assignedTo && lead.assignedTo).length;
     setMessage(`Режим: ${mode.replace('_', ' ')}. Назначено ${assignedCount} лидов.`);
@@ -128,6 +128,7 @@ export function LeadsBoard() {
 
   const saveLead = async () => {
     if (!editingLead && !isCreatingLead) return;
+    const currentLead = editingLead;
     const customerName = editCustomerName.trim();
     const phone = editPhone.trim();
     const email = editEmail.trim();
@@ -188,7 +189,8 @@ export function LeadsBoard() {
       return;
     }
 
-    const { error: updateError } = await updateLead(editingLead.id, {
+    if (!currentLead) return;
+    const { error: updateError } = await updateLead(currentLead.id, {
       status: editStatus,
       sourceId: editSourceId ?? undefined,
       customerName,
@@ -205,7 +207,7 @@ export function LeadsBoard() {
 
     setLeads((current) =>
       current.map((lead) =>
-        lead.id === editingLead.id
+        lead.id === currentLead.id
           ? {
               ...lead,
               sourceId: editSourceId ?? lead.sourceId,
