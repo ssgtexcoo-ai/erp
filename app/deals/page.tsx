@@ -187,9 +187,7 @@ export default function DealsPage() {
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h1 className="text-2xl font-semibold">CRM · Воронка продаж</h1>
-              <p className="mt-1 text-sm text-slate-400">
-                {deals.length} сделок · {totalVolume.toLocaleString('ru-RU')} ₸
-              </p>
+              <p className="mt-1 text-sm text-slate-400">Pipeline сделок</p>
             </div>
             <button
               type="button"
@@ -198,6 +196,27 @@ export default function DealsPage() {
             >
               + Добавить сделку
             </button>
+          </div>
+
+          {/* Stats panel */}
+          <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+            {[
+              { label: 'Всего сделок', value: deals.length },
+              { label: 'Сумма воронки', value: `${totalVolume.toLocaleString('ru-RU')} ₸` },
+              {
+                label: 'В стадии КП',
+                value: deals.filter((d) =>
+                  stages.find((s) => s.id === d.stageId)?.name?.toLowerCase().includes('кп') ||
+                  stages.find((s) => s.id === d.stageId)?.name?.toLowerCase().includes('коммерческое')
+                ).length,
+              },
+              { label: 'Стадий', value: stages.length },
+            ].map((stat) => (
+              <div key={stat.label} className="rounded-2xl border border-slate-800 bg-slate-900/60 px-4 py-3">
+                <p className="text-[10px] uppercase tracking-widest text-slate-500">{stat.label}</p>
+                <p className="mt-1.5 text-xl font-semibold text-white tabular-nums">{stat.value}</p>
+              </div>
+            ))}
           </div>
         </div>
 
@@ -222,15 +241,18 @@ export default function DealsPage() {
                     onDragLeave={handleDragLeave}
                     onDrop={(e) => handleDrop(e, stage.id)}
                   >
-                    <div className="flex items-center justify-between px-4 pt-4 pb-3">
-                      <div>
+                    <div className="px-4 pt-4 pb-3">
+                      <div className="flex items-start justify-between gap-2">
                         <p className="text-sm font-semibold text-slate-100">{stage.name}</p>
-                        <p className="mt-0.5 text-xs text-slate-500">{items.length} сделок</p>
+                        <span className="shrink-0 rounded-full bg-slate-800 px-2 py-0.5 text-[10px] font-medium text-slate-400">
+                          {items.length}
+                        </span>
                       </div>
-                      <div className="flex h-6 w-12 items-center justify-end">
-                        <div className="h-1.5 w-full rounded-full bg-slate-800 overflow-hidden">
-                          <div className="h-full rounded-full bg-sky-500/70" style={{ width: `${stage.progress_percent}%` }} />
-                        </div>
+                      <p className="mt-1 text-xs font-semibold tabular-nums text-sky-400">
+                        {columnTotal > 0 ? `${columnTotal.toLocaleString('ru-RU')} ₸` : '—'}
+                      </p>
+                      <div className="mt-2 h-1 w-full rounded-full bg-slate-800 overflow-hidden">
+                        <div className="h-full rounded-full bg-sky-500/60" style={{ width: `${stage.progress_percent}%` }} />
                       </div>
                     </div>
 
@@ -286,9 +308,9 @@ export default function DealsPage() {
                       )}
                     </div>
 
-                    <div className="border-t border-slate-800/60 px-4 py-3">
-                      <p className="text-xs font-semibold tabular-nums text-slate-300">
-                        {columnTotal.toLocaleString('ru-RU')} ₸
+                    <div className="border-t border-slate-800/60 px-4 py-2.5">
+                      <p className="text-[10px] tabular-nums text-slate-500">
+                        {items.length === 0 ? 'Нет сделок' : `${items.length} ${items.length === 1 ? 'сделка' : items.length < 5 ? 'сделки' : 'сделок'} · ${columnTotal.toLocaleString('ru-RU')} ₸`}
                       </p>
                     </div>
                   </div>
