@@ -274,9 +274,12 @@ export default function GanttPage() {
                     </div>
                     {/* Today marker in header */}
                     <div
-                      className="absolute top-0 bottom-0 w-px bg-rose-500/40"
-                      style={{ left: `${todayOffset}%` }}
-                    />
+                      className="absolute top-0 bottom-0 flex flex-col items-center"
+                      style={{ left: `${todayOffset}%`, transform: 'translateX(-50%)' }}
+                    >
+                      <span className="text-[9px] font-semibold text-rose-400 whitespace-nowrap">Сегодня</span>
+                      <div className="flex-1 w-px bg-rose-500/40" />
+                    </div>
                   </div>
                 </div>
 
