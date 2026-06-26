@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>codeERP Текущий прогресс</title>
+  <style>
+    body { font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f172a; color: #e2e8f0; margin: 0; padding: 0; }
+    .page { max-width: 980px; margin: 0 auto; padding: 32px; }
+    h1, h2 { color: #38bdf8; }
+    a { color: #7dd3fc; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .card { border: 1px solid #334155; border-radius: 16px; background: #111827; padding: 20px; margin-bottom: 20px; }
+    .badge { display: inline-block; padding: 4px 10px; border-radius: 999px; background: #0ea5e9; color: white; font-size: 0.9rem; }
+    ul { line-height: 1.8; }
+    .note { color: #94a3b8; margin-top: 12px; }
+    code { background: #0f172a; color: #38bdf8; padding: 2px 4px; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <h1>codeERP — текущий прогресс</h1>
+    <p>Этот файл показывает, что уже реализовано в проекте на данный момент.</p>
+
+    <div class="card">
+      <h2>Как открыть</h2>
+      <ul>
+        <li>Откройте файл напрямую через браузер: <code>file:///Users/damirahmetkali/Desktop/codeERP/progress.html</code></li>
+        <li>Если браузер не показывает содержимое, попробуйте перезапустить вкладку или открыть файл другим браузером.</li>
+        <li>Это статический отчёт — он не зависит от запущенного localhost.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2>Что уже подключено</h2>
+      <ul>
+        <li><span class="badge">auth</span> <strong>/login</strong> — Supabase OTP вход и авторизация, авторизация работает</li>
+        <li><span class="badge">dashboard</span> <strong>/dashboard</strong> — дашборд загружает метрики из Supabase</li>
+        <li><span class="badge">leads</span> <strong>/leads</strong> — доска лидов, запросы к базе и SLA статус</li>
+        <li><span class="badge">deals</span> <strong>/deals</strong> — сделки с данными ответственных и прогрессом</li>
+        <li><span class="badge">projects</span> <strong>/projects</strong> — объекты, бюджет и прибыль</li>
+        <li><span class="badge">documents</span> <strong>/documents</strong> — документы с URL и метаданными</li>
+        <li><span class="badge">employee</span> <strong>/employee</strong> — рейтинг сотрудников и счёт очков</li>
+        <li><span class="badge">notifications</span> <strong>/notifications</strong> — уведомления с именами пользователей</li>
+        <li><span class="badge">kanban</span> <strong>/kanban</strong> — задачи Kanban, реальные задачи из Supabase</li>
+        <li><span class="badge">gantt</span> <strong>/gantt</strong> — диаграмма Ганта, прогресс по задачам проекта</li>
+      </ul>
+      <p class="note">Страницы связаны с библиотекой сервисов и Supabase-функциями.</p>
+    </div>
+
+    <div class="card">
+      <h2>Файлы сервиса</h2>
+      <ul>
+        <li><code>lib/userService.ts</code></li>
+        <li><code>lib/leadService.ts</code></li>
+        <li><code>lib/dealService.ts</code></li>
+        <li><code>lib/projectService.ts</code></li>
+        <li><code>lib/documentService.ts</code></li>
+        <li><code>lib/employeeService.ts</code></li>
+        <li><code>lib/notificationService.ts</code></li>
+        <li><code>lib/taskService.ts</code></li>
+        <li><code>lib/dashboardService.ts</code></li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2>Что можно посмотреть прямо сейчас</h2>
+      <ul>
+        <li>Откройте браузер и перейдите по адресу <strong><code>file:///Users/damirahmetkali/Desktop/codeERP/progress.html</code></strong>.</li>
+        <li>Если хотите увидеть приложение, запустите в терминале <code>npm install</code> и <code>npm run dev</code>, затем откройте <strong><code>http://localhost:3000</code></strong>.</li>
+      </ul>
+    </div>
+
+    <p class="note">Если нужно, я могу добавить в этот файл ещё реальный список доступных страниц и статус их подключения по модулю.</p>
+  </div>
+</body>
+</html>

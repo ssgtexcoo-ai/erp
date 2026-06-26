@@ -1,0 +1,45 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --samruq-bg: #0f172a;
+  --samruq-surface: #111827;
+  --samruq-surface-2: #1f2937;
+  --samruq-gold: #d8b06a;
+  --samruq-gold-strong: #f1cd7f;
+  --samruq-gold-dim: #9f804b;
+  --samruq-blue: #f1cd7f;
+  --samruq-blue-strong: #d8b06a;
+  --samruq-text: #e5e7eb;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  min-height: 100vh;
+  background: #0b1020;
+  color: var(--samruq-text);
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(241,205,127,0.12); border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(241,205,127,0.22); }
+
+/* Smooth transitions on interactive elements */
+a, button { transition-property: color, background-color, border-color, opacity, transform, box-shadow; transition-duration: 150ms; transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); }
+
+* {
+  box-sizing: border-box;
+}
+
+::selection {
+  background: rgba(241, 205, 127, 0.22);
+  color: #ffffff;
+}
