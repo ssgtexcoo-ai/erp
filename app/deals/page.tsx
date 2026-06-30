@@ -12,20 +12,20 @@ function getDaysInStage(updatedAt: string): number {
 }
 
 function getSlaBorderClass(days: number): string {
-  if (days > 7) return 'border-rose-500/70';
-  if (days >= 4) return 'border-yellow-500/60';
-  return 'border-slate-700/60';
+  if (days > 7) return 'border-rose-500';
+  if (days >= 4) return 'border-amber-500';
+  return 'border-slate-700';
 }
 
 function getSlaTextClass(days: number): string {
   if (days > 7) return 'text-rose-400';
-  if (days >= 4) return 'text-yellow-400';
+  if (days >= 4) return 'text-amber-400';
   return 'text-slate-500';
 }
 
 function getSlaBadgeClass(days: number): string {
   if (days > 7) return 'bg-rose-500/15 text-rose-300';
-  if (days >= 4) return 'bg-yellow-500/15 text-yellow-300';
+  if (days >= 4) return 'bg-amber-500/15 text-amber-300';
   return 'bg-slate-800 text-slate-400';
 }
 
@@ -273,7 +273,7 @@ export default function DealsPage() {
                               onDragStart={(e) => handleDragStart(e, deal.id)}
                               onDragEnd={handleDragEnd}
                               onClick={() => openEdit(deal)}
-                              className={`group relative rounded-xl border bg-slate-950/70 px-4 py-3 cursor-pointer select-none transition-all hover:bg-slate-900/80 hover:shadow-md ${getSlaBorderClass(days)} ${isDragging ? 'opacity-30 scale-95' : 'opacity-100'}`}
+                              className={`group relative rounded-2xl border bg-slate-900/80 px-4 py-3 cursor-pointer select-none transition-all hover:bg-slate-900 hover:shadow-md ${getSlaBorderClass(days)} ${isDragging ? 'opacity-30 scale-95' : 'opacity-100'}`}
                             >
                               <div className="flex items-start justify-between gap-2">
                                 <p className="text-sm font-semibold text-slate-100 leading-snug">{deal.customerName}</p>

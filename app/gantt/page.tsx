@@ -34,6 +34,7 @@ function getProgressPercent(tasks: TaskWithAssignee[]) {
 function getStatusLabel(status: string) {
   if (status === 'active') return 'В работе';
   if (status === 'planning') return 'Планирование';
+  if (status === 'on_hold') return 'Приостановлен';
   if (status === 'closed') return 'Завершён';
   return status;
 }
@@ -41,6 +42,7 @@ function getStatusLabel(status: string) {
 function getStatusBadgeClass(status: string) {
   if (status === 'active') return 'bg-emerald-500/15 text-emerald-300 border-emerald-500/20';
   if (status === 'planning') return 'bg-sky-500/15 text-sky-300 border-sky-500/20';
+  if (status === 'on_hold') return 'bg-amber-500/15 text-amber-300 border-amber-500/20';
   if (status === 'closed') return 'bg-slate-700 text-slate-400 border-slate-600';
   return 'bg-slate-800 text-slate-300 border-slate-700';
 }
@@ -51,15 +53,6 @@ function getInitials(name: string) {
     .slice(0, 2)
     .map((w) => w.charAt(0).toUpperCase())
     .join('');
-}
-
-const AVATAR_COLORS = [
-  'bg-sky-600', 'bg-violet-600', 'bg-emerald-600',
-  'bg-rose-600', 'bg-amber-600', 'bg-cyan-600', 'bg-fuchsia-600',
-];
-
-function getAvatarColor(id: number) {
-  return AVATAR_COLORS[id % AVATAR_COLORS.length];
 }
 
 function getRangeBounds(projects: ProjectWithDetails[], tasks: TaskWithAssignee[]) {
@@ -303,7 +296,7 @@ export default function GanttPage() {
                         <div className="border-r border-slate-800 p-4 flex flex-col gap-3">
                           <div className="flex items-start gap-3">
                             {/* Avatar with initials */}
-                            <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-bold text-white ${getAvatarColor(project.id)}`}>
+                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-sky-500/20 text-sm font-bold text-sky-100">
                               {getInitials(project.name)}
                             </div>
                             <div className="min-w-0 flex-1">
