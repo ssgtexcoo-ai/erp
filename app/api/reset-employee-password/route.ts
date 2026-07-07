@@ -1,20 +1,22 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
 
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  { auth: { autoRefreshToken: false, persistSession: false } }
-);
+function createAdmin(): SupabaseClient {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL ?? '',
+    process.env.SUPABASE_SERVICE_ROLE_KEY ?? '',
+    { auth: { autoRefreshToken: false, persistSession: false } }
+  );
+}
 
-async function requireDirector(req: Request): Promise<string | null> {
+async function requireDirector(req: Request, admin: SupabaseClient): Promise<string | null> {
   const token = req.headers.get('Authorization')?.replace('Bearer ', '');
   if (!token) return null;
 
-  const { data: { user }, error } = await supabaseAdmin.auth.getUser(token);
+  const { data: { user }, error } = await admin.auth.getUser(token);
   if (error || !user) return null;
 
-  const { data: row } = await supabaseAdmin
+  const { data: row } = await admin
     .from('users')
     .select('role_id')
     .eq('auth_id', user.id)
@@ -24,7 +26,8 @@ async function requireDirector(req: Request): Promise<string | null> {
 }
 
 export async function POST(req: Request) {
-  const callerId = await requireDirector(req);
+  const admin = createAdmin();
+  const callerId = await requireDirector(req, admin);
   if (!callerId) {
     return NextResponse.json({ error: 'Недостаточно прав' }, { status: 403 });
   }
@@ -35,7 +38,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Пароль минимум 6 символов' }, { status: 400 });
   }
 
-  const { error } = await supabaseAdmin.auth.admin.updateUserById(authId, {
+  const { error } = await admin.auth.admin.updateUserById(authId, {
     password,
     email_confirm: true,
   });
