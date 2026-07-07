@@ -2,44 +2,243 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ─── Apple Design System ─────────────────────────────── */
 :root {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+    "Helvetica Neue", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: "kern" 1, "liga" 1, "calt" 1;
+
+  /* Brand gold */
+  --gold:              #d8b06a;
+  --gold-bright:       #f1cd7f;
+  --gold-dim:          rgba(216,176,106,0.55);
+  --gold-bg:           rgba(216,176,106,0.10);
+  --gold-border:       rgba(216,176,106,0.22);
+
+  /* System colors */
+  --green:  #30d158;
+  --blue:   #0a84ff;
+  --purple: #bf5af2;
+  --orange: #ff9f0a;
+  --red:    #ff453a;
+
+  /* Misc */
+  --radius-tile:  22px;
+  --radius-inner: 14px;
+
+  /* ── DARK THEME (default) ── */
   color-scheme: dark;
-  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --samruq-bg: #0f172a;
-  --samruq-surface: #111827;
-  --samruq-surface-2: #1f2937;
-  --samruq-gold: #d8b06a;
-  --samruq-gold-strong: #f1cd7f;
-  --samruq-gold-dim: #9f804b;
-  --samruq-blue: #f1cd7f;
-  --samruq-blue-strong: #d8b06a;
-  --samruq-text: #e5e7eb;
+  --bg-page:       #000000;
+  --bg-sidebar:    rgba(10,10,12,0.95);
+  --bg-card:       rgba(28,28,30,0.80);
+  --bg-card-2:     rgba(28,28,30,0.75);
+  --bg-modal:      rgba(28,28,30,0.98);
+  --bg-input:      rgba(255,255,255,0.06);
+  --bg-hover:      rgba(255,255,255,0.04);
+  --bg-subtle:     rgba(255,255,255,0.05);
+  --border:        rgba(255,255,255,0.10);
+  --border-2:      rgba(255,255,255,0.08);
+  --text-primary:  #ffffff;
+  --text-secondary:rgba(235,235,245,0.55);
+  --text-tertiary: rgba(235,235,245,0.35);
+  --text-placeholder: rgba(235,235,245,0.25);
 }
 
-html {
-  scroll-behavior: smooth;
+/* ── Obsidian (тёмная) ── */
+.dark {
+  color-scheme: dark;
+  --bg-page:          #080808;
+  --bg-sidebar:       rgba(12,12,14,0.97);
+  --bg-card:          rgba(24,24,26,0.85);
+  --bg-card-2:        rgba(22,22,24,0.80);
+  --bg-modal:         rgba(20,20,22,0.99);
+  --bg-input:         rgba(255,255,255,0.06);
+  --bg-hover:         rgba(255,255,255,0.04);
+  --bg-subtle:        rgba(255,255,255,0.05);
+  --border:           rgba(255,255,255,0.09);
+  --border-2:         rgba(255,255,255,0.06);
+  --text-primary:     #f5f5f7;
+  --text-secondary:   rgba(235,235,245,0.55);
+  --text-tertiary:    rgba(235,235,245,0.35);
+  --text-placeholder: rgba(235,235,245,0.22);
 }
+
+/* ── Arctic (светло-серая) ── */
+.light {
+  color-scheme: light;
+  --bg-page:          #eef0f5;
+  --bg-sidebar:       rgba(240,242,250,0.97);
+  --bg-card:          rgba(248,249,252,0.92);
+  --bg-card-2:        rgba(244,246,252,0.88);
+  --bg-modal:         rgba(252,253,255,0.99);
+  --bg-input:         rgba(60,80,140,0.06);
+  --bg-hover:         rgba(60,80,140,0.04);
+  --bg-subtle:        rgba(60,80,140,0.05);
+  --border:           rgba(60,80,140,0.12);
+  --border-2:         rgba(60,80,140,0.08);
+  --text-primary:     #1c1c2e;
+  --text-secondary:   rgba(40,45,80,0.62);
+  --text-tertiary:    rgba(40,45,80,0.40);
+  --text-placeholder: rgba(40,45,80,0.25);
+}
+
+/* ── Ocean (тёмно-синяя) ── */
+.ocean {
+  color-scheme: dark;
+  --bg-page:          #07111f;
+  --bg-sidebar:       rgba(5,12,25,0.97);
+  --bg-card:          rgba(10,22,45,0.88);
+  --bg-card-2:        rgba(8,18,38,0.84);
+  --bg-modal:         rgba(8,18,40,0.99);
+  --bg-input:         rgba(80,130,255,0.08);
+  --bg-hover:         rgba(80,130,255,0.05);
+  --bg-subtle:        rgba(80,130,255,0.06);
+  --border:           rgba(80,140,255,0.14);
+  --border-2:         rgba(80,140,255,0.09);
+  --text-primary:     #deeaff;
+  --text-secondary:   rgba(180,210,255,0.65);
+  --text-tertiary:    rgba(160,195,255,0.40);
+  --text-placeholder: rgba(160,195,255,0.25);
+}
+
+/* ── Sand (тёплая песочная) ── */
+.sand {
+  color-scheme: light;
+  --bg-page:          #f0e8d8;
+  --bg-sidebar:       rgba(242,234,218,0.98);
+  --bg-card:          rgba(255,250,240,0.92);
+  --bg-card-2:        rgba(252,246,234,0.88);
+  --bg-modal:         rgba(255,253,248,0.99);
+  --bg-input:         rgba(160,110,40,0.07);
+  --bg-hover:         rgba(160,110,40,0.05);
+  --bg-subtle:        rgba(160,110,40,0.06);
+  --border:           rgba(160,110,40,0.16);
+  --border-2:         rgba(160,110,40,0.10);
+  --text-primary:     #2a1a06;
+  --text-secondary:   rgba(90,60,20,0.65);
+  --text-tertiary:    rgba(90,60,20,0.42);
+  --text-placeholder: rgba(90,60,20,0.28);
+}
+
+html { scroll-behavior: smooth; }
 
 body {
   min-height: 100vh;
-  background: #0b1020;
-  color: var(--samruq-text);
+  background: var(--bg-page);
+  color: var(--text-primary);
+  transition: background 0.25s ease, color 0.25s ease;
 }
 
-/* Custom scrollbar */
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(241,205,127,0.12); border-radius: 99px; }
-::-webkit-scrollbar-thumb:hover { background: rgba(241,205,127,0.22); }
-
-/* Smooth transitions on interactive elements */
-a, button { transition-property: color, background-color, border-color, opacity, transform, box-shadow; transition-duration: 150ms; transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); }
-
-* {
-  box-sizing: border-box;
+/* ─── Focus (WCAG AA) ─── */
+:focus-visible {
+  outline: 2px solid rgba(216,176,106,0.65);
+  outline-offset: 2px;
+  border-radius: 6px;
 }
+
+/* ─── Scrollbar ─── */
+::-webkit-scrollbar        { width: 4px; height: 4px; }
+::-webkit-scrollbar-track  { background: transparent; }
+::-webkit-scrollbar-thumb  { background: rgba(255,255,255,0.12); border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.22); }
+
+/* ─── Transitions ─── */
+a, button {
+  transition-property: color, background-color, border-color, opacity, transform, box-shadow;
+  transition-duration: 200ms;
+  transition-timing-function: cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+* { box-sizing: border-box; }
 
 ::selection {
-  background: rgba(241, 205, 127, 0.22);
+  background: rgba(216,176,106,0.28);
   color: #ffffff;
+}
+
+/* ─── Apple Tile ─── */
+.tile {
+  background: #1d1d1f;
+  border-radius: 22px;
+  overflow: hidden;
+}
+
+.tile-hover {
+  background: #1d1d1f;
+  border-radius: 22px;
+  overflow: hidden;
+  transition: transform 200ms cubic-bezier(0.25,0.1,0.25,1),
+              background 200ms;
+}
+.tile-hover:hover {
+  background: #242426;
+  transform: scale(1.01);
+}
+
+/* ─── Animations ─── */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
+
+.animate-fade-in-up  { animation: fadeInUp 0.4s cubic-bezier(0.25,0.1,0.25,1) both; }
+.animate-fade-in     { animation: fadeIn   0.3s ease both; }
+.animate-delay-1     { animation-delay:  80ms; }
+.animate-delay-2     { animation-delay: 160ms; }
+.animate-delay-3     { animation-delay: 240ms; }
+.animate-delay-4     { animation-delay: 320ms; }
+
+/* ─── Skeleton ─── */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba(255,255,255,0.04) 25%,
+    rgba(255,255,255,0.09) 50%,
+    rgba(255,255,255,0.04) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.8s ease-in-out infinite;
+  border-radius: 10px;
+}
+
+/* ─── Typography ─── */
+.display { letter-spacing: -0.048em; font-weight: 700; line-height: 1.05; }
+.headline { letter-spacing: -0.03em; font-weight: 600; line-height: 1.15; }
+
+/* ─── Tailwind slate overrides for non-dark themes ─── */
+.light, .ocean, .sand {
+  .bg-slate-900\/85, .bg-slate-900\/80, .bg-slate-900 { background: var(--bg-card) !important; }
+  .bg-slate-950\/40, .bg-slate-950\/80, .bg-slate-950 { background: var(--bg-page) !important; }
+  .bg-slate-800 { background: var(--bg-subtle) !important; }
+  .border-slate-700 { border-color: var(--border) !important; }
+  .border-slate-800 { border-color: var(--border-2) !important; }
+  .border-slate-800\/40, .border-slate-800\/50 { border-color: var(--border-2) !important; }
+  .text-slate-100, .text-slate-200 { color: var(--text-primary) !important; }
+  .text-slate-300 { color: var(--text-secondary) !important; }
+  .text-slate-400 { color: var(--text-secondary) !important; }
+  .text-slate-500 { color: var(--text-tertiary) !important; }
+  .text-slate-600 { color: var(--text-tertiary) !important; }
+  input, select { background: var(--bg-input) !important; color: var(--text-primary) !important; border-color: var(--border) !important; }
+}
+
+/* ocean specifics — keep dark-ish inputs */
+.ocean {
+  input, select { background: var(--bg-input) !important; color: var(--text-primary) !important; }
 }

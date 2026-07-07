@@ -3,6 +3,7 @@ import type { Project } from '@/lib/types';
 
 export interface ProjectWithDetails extends Project {
   responsibleName?: string;
+  responsibleAvatarUrl?: string | null;
   stageProgress: number;
   stageCount: number;
   completedStages: number;
@@ -11,6 +12,7 @@ export interface ProjectWithDetails extends Project {
 export interface ProjectUser {
   id: number;
   full_name: string;
+  avatar_url?: string | null;
 }
 
 export interface ProjectStageSummary {
@@ -21,7 +23,7 @@ export interface ProjectStageSummary {
 export async function fetchProjects() {
   const [{ data: projects, error: projectsError }, { data: users, error: usersError }] = await Promise.all([
     supabase.from('projects').select('*').order('start_date', { ascending: true }),
-    supabase.from('users').select('id, full_name'),
+    supabase.from('users').select('id, full_name, avatar_url'),
   ]);
 
   if (projectsError || usersError) {
@@ -53,8 +55,12 @@ export async function fetchProjects() {
     stageGroups.set(stage.project_id, items);
   });
 
-  const userMap = new Map<number, string>();
-  ((users ?? []) as Array<{ id: number; full_name: string }>).forEach((u) => userMap.set(u.id, u.full_name));
+  const userNameMap = new Map<number, string>();
+  const userAvatarMap = new Map<number, string | null>();
+  ((users ?? []) as Array<{ id: number; full_name: string; avatar_url?: string | null }>).forEach((u) => {
+    userNameMap.set(u.id, u.full_name);
+    userAvatarMap.set(u.id, u.avatar_url ?? null);
+  });
 
   const enrichedProjects: ProjectWithDetails[] = projectRows.map((row) => {
     const stages = stageGroups.get(row.id) ?? [];
@@ -75,7 +81,8 @@ export async function fetchProjects() {
       endDate: row.end_date,
       status: row.status,
       profitEstimate: row.profit_estimate,
-      responsibleName: row.responsible_id ? (userMap.get(Number(row.responsible_id)) ?? String(row.responsible_id)) : 'Не назначен',
+      responsibleName: row.responsible_id ? (userNameMap.get(Number(row.responsible_id)) ?? String(row.responsible_id)) : 'Не назначен',
+      responsibleAvatarUrl: row.responsible_id ? (userAvatarMap.get(Number(row.responsible_id)) ?? null) : null,
       stageProgress,
       stageCount,
       completedStages,

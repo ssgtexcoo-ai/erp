@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { ProtectedPage } from '@/components/protected-page';
 import { PAGE_ACCESS } from '@/lib/permissions';
+import { UserAvatar } from '@/components/user-avatar';
 import {
   createProject,
   deleteProject,
@@ -13,6 +14,23 @@ import {
 } from '@/lib/projectService';
 
 const PROJECT_STATUSES = ['planning', 'active', 'on_hold', 'closed'] as const;
+
+const STATUS_STYLE: Record<string, string> = {
+  planning: 'bg-violet-500/15 text-violet-300',
+  active: 'bg-emerald-500/15 text-emerald-300',
+  on_hold: 'bg-amber-500/15 text-amber-300',
+  closed: 'bg-[var(--bg-input)] text-[#6b7280]',
+};
+
+const STATUS_LABEL: Record<string, string> = {
+  planning: 'Планирование',
+  active: 'Активный',
+  on_hold: 'Приостановлен',
+  closed: 'Завершён',
+};
+
+const INPUT_CLS =
+  'w-full rounded-[14px] px-4 py-3 text-[15px] text-white outline-none transition-all duration-200 placeholder:text-[rgba(235,235,245,0.25)]';
 
 export default function ProjectsPage() {
   const [projects, setProjects] = useState<ProjectWithDetails[]>([]);
@@ -29,6 +47,7 @@ export default function ProjectsPage() {
   const [editStatus, setEditStatus] = useState<string>('planning');
   const [editStartDate, setEditStartDate] = useState('');
   const [editEndDate, setEditEndDate] = useState('');
+  const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
 
   useEffect(() => {
     const loadProjects = async () => {
@@ -49,8 +68,11 @@ export default function ProjectsPage() {
     loadProjects();
   }, []);
 
-  const totalProfit = projects.reduce((sum, project) => sum + Number(project.profitEstimate ?? 0), 0);
-  const overdueCount = projects.filter((project) => project.endDate && new Date(project.endDate) < new Date() && project.status !== 'closed').length;
+  const totalProfit = projects.reduce((sum, p) => sum + Number(p.profitEstimate ?? 0), 0);
+  const overdueCount = projects.filter(
+    (p) => p.endDate && new Date(p.endDate) < new Date() && p.status !== 'closed',
+  ).length;
+  const activeCount = projects.filter((p) => p.status === 'active').length;
 
   const openCreateProject = () => {
     setEditingProject(null);
@@ -95,21 +117,12 @@ export default function ProjectsPage() {
     const budget = Number(editBudget);
     const profitEstimate = editProfitEstimate.trim() ? Number(editProfitEstimate) : null;
 
-    if (!name) {
-      setError('Укажите название объекта.');
-      return;
-    }
-
-    if (!Number.isFinite(budget) || budget < 0) {
-      setError('Укажите корректный бюджет (0 или больше).');
-      return;
-    }
-
+    if (!name) { setError('Укажите название объекта.'); return; }
+    if (!Number.isFinite(budget) || budget < 0) { setError('Укажите корректный бюджет.'); return; }
     if (profitEstimate !== null && (!Number.isFinite(profitEstimate) || profitEstimate < 0)) {
-      setError('Укажите корректную прибыль (0 или больше).');
+      setError('Укажите корректную прибыль.');
       return;
     }
-
     if (editStartDate && editEndDate && new Date(editStartDate) > new Date(editEndDate)) {
       setError('Дата старта не может быть позже даты завершения.');
       return;
@@ -120,14 +133,8 @@ export default function ProjectsPage() {
 
     if (isCreatingProject) {
       const { project: newProject, error: createError } = await createProject({
-        name,
-        clientName,
-        budget,
-        responsibleId: editResponsibleId,
-        status: editStatus,
-        startDate: editStartDate || null,
-        endDate: editEndDate || null,
-        profitEstimate,
+        name, clientName, budget, responsibleId: editResponsibleId,
+        status: editStatus, startDate: editStartDate || null, endDate: editEndDate || null, profitEstimate,
       });
 
       if (createError || !newProject) {
@@ -137,10 +144,7 @@ export default function ProjectsPage() {
       }
 
       setProjects((current) => [
-        {
-          ...newProject,
-          responsibleName: editResponsibleId ? users.find((user) => user.id === editResponsibleId)?.full_name ?? 'Не назначен' : 'Не назначен',
-        },
+        { ...newProject, responsibleName: editResponsibleId ? users.find((u) => u.id === editResponsibleId)?.full_name ?? 'Не назначен' : 'Не назначен' },
         ...current,
       ]);
       closeEditor();
@@ -150,38 +154,21 @@ export default function ProjectsPage() {
 
     if (!currentProject) return;
     const { error: updateError } = await updateProject(currentProject.id, {
-      name,
-      clientName,
-      budget,
-      responsibleId: editResponsibleId,
-      status: editStatus,
-      startDate: editStartDate || null,
-      endDate: editEndDate || null,
-      profitEstimate,
+      name, clientName, budget, responsibleId: editResponsibleId,
+      status: editStatus, startDate: editStartDate || null, endDate: editEndDate || null, profitEstimate,
     });
 
-    if (updateError) {
-      setError(updateError.message);
-      setLoading(false);
-      return;
-    }
+    if (updateError) { setError(updateError.message); setLoading(false); return; }
 
     setProjects((current) =>
-      current.map((project) =>
-        project.id === currentProject.id
+      current.map((p) =>
+        p.id === currentProject.id
           ? {
-              ...project,
-              name,
-              clientName,
-              budget,
-              responsibleId: editResponsibleId,
-              responsibleName: editResponsibleId ? users.find((user) => user.id === editResponsibleId)?.full_name ?? 'Не назначен' : 'Не назначен',
-              status: editStatus,
-              startDate: editStartDate || null,
-              endDate: editEndDate || null,
-              profitEstimate,
+              ...p, name, clientName, budget, responsibleId: editResponsibleId,
+              responsibleName: editResponsibleId ? users.find((u) => u.id === editResponsibleId)?.full_name ?? 'Не назначен' : 'Не назначен',
+              status: editStatus, startDate: editStartDate || null, endDate: editEndDate || null, profitEstimate,
             }
-          : project,
+          : p,
       ),
     );
 
@@ -190,253 +177,215 @@ export default function ProjectsPage() {
   };
 
   const removeProject = async (projectId: number) => {
-    if (!confirm('Удалить объект?')) return;
-
     setLoading(true);
     const { error: deleteError } = await deleteProject(projectId);
-
-    if (deleteError) {
-      setError(deleteError.message);
-      setLoading(false);
-      return;
-    }
-
-    setProjects((current) => current.filter((project) => project.id !== projectId));
+    if (deleteError) { setError(deleteError.message); setLoading(false); return; }
+    setProjects((current) => current.filter((p) => p.id !== projectId));
+    setConfirmDeleteId(null);
     setLoading(false);
   };
 
   return (
     <ProtectedPage allowedRoles={PAGE_ACCESS.projects}>
-      <main className="min-h-screen bg-slate-950 text-slate-100 px-6 py-10">
+      <main className="min-h-screen text-white px-3 py-5 sm:px-6 sm:py-10">
         <div className="mx-auto max-w-7xl space-y-8">
-          <section className="rounded-3xl border border-slate-700 bg-slate-900/85 p-8 shadow-2xl shadow-slate-950/20">
+
+          {/* Header */}
+          <section className="rounded-[24px] p-4 sm:p-8" style={{ background: 'var(--bg-card)', backdropFilter: 'blur(24px) saturate(180%)', WebkitBackdropFilter: 'blur(24px) saturate(180%)', border: '1px solid var(--border)' }}>
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <h1 className="text-3xl font-semibold">Объекты</h1>
-                <p className="mt-3 text-slate-400">Карточки объектов, стадии строительства и планируемая прибыль.</p>
+                <p className="text-[11px] font-medium uppercase tracking-widest" style={{ color: 'var(--text-tertiary)' }}>Строительство</p>
+                <h1 className="mt-1 text-[30px] font-bold" style={{ letterSpacing: '-0.04em' }}>Объекты</h1>
+                <p className="mt-2 text-[14px]" style={{ color: 'var(--text-secondary)' }}>Карточки объектов, стадии и планируемая прибыль</p>
               </div>
               <button
                 type="button"
                 onClick={openCreateProject}
-                className="rounded-2xl bg-sky-500 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-sky-400"
+                className="rounded-[14px] px-5 py-3 text-[14px] font-semibold transition-all duration-150 hover:opacity-90"
+                style={{ background: '#d8b06a', color: '#000000', letterSpacing: '-0.01em' }}
               >
-                Добавить объект
+                + Добавить объект
               </button>
             </div>
           </section>
 
-          <section className="grid gap-6 lg:grid-cols-3">
-            <article className="rounded-3xl border border-slate-700 bg-slate-900/80 p-6">
-              <p className="text-sm uppercase tracking-[0.3em] text-slate-400">Активные объекты</p>
-              <p className="mt-4 text-3xl font-semibold">{projects.length}</p>
-            </article>
-            <article className="rounded-3xl border border-slate-700 bg-slate-900/80 p-6">
-              <p className="text-sm uppercase tracking-[0.3em] text-slate-400">Просроченные</p>
-              <p className="mt-4 text-3xl font-semibold">{overdueCount}</p>
-            </article>
-            <article className="rounded-3xl border border-slate-700 bg-slate-900/80 p-6">
-              <p className="text-sm uppercase tracking-[0.3em] text-slate-400">Ожидаемая прибыль</p>
-              <p className="mt-4 text-3xl font-semibold">{totalProfit.toLocaleString('ru-RU')} ₸</p>
-            </article>
+          {/* KPI strip */}
+          <section className="grid gap-4 sm:grid-cols-3">
+            {[
+              { label: 'Всего объектов', value: projects.length, color: '#d8b06a' },
+              { label: 'Активных', value: activeCount, color: '#34c759' },
+              { label: 'Просроченных', value: overdueCount, color: '#ff453a' },
+            ].map((kpi) => (
+              <div key={kpi.label} className="rounded-[20px] p-6" style={{ background: 'var(--bg-card)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', border: '1px solid var(--border)' }}>
+                <p className="text-[11px] uppercase tracking-widest" style={{ color: 'var(--text-tertiary)' }}>{kpi.label}</p>
+                <p className="mt-3 text-[40px] font-bold" style={{ color: kpi.color, letterSpacing: '-0.05em' }}>{kpi.value}</p>
+              </div>
+            ))}
           </section>
 
-          <section className="rounded-3xl border border-slate-700 bg-slate-900/80 p-8">
-            <h2 className="text-xl font-semibold">Список объектов</h2>
+          {/* Profit KPI */}
+          <div className="rounded-[20px] px-6 py-5" style={{ background: 'rgba(216,176,106,0.08)', border: '1px solid rgba(216,176,106,0.16)' }}>
+            <p className="text-[11px] uppercase tracking-widest" style={{ color: 'rgba(216,176,106,0.60)' }}>Ожидаемая прибыль по всем объектам</p>
+            <p className="mt-1 text-[30px] font-bold" style={{ color: '#d8b06a', letterSpacing: '-0.04em' }}>{totalProfit.toLocaleString('ru-RU')} ₸</p>
+          </div>
+
+          {/* Project list */}
+          <section className="rounded-[24px] p-4 sm:p-8" style={{ background: 'var(--bg-card)', backdropFilter: 'blur(24px) saturate(180%)', WebkitBackdropFilter: 'blur(24px) saturate(180%)', border: '1px solid var(--border)' }}>
+            <h2 className="text-[20px] font-semibold" style={{ letterSpacing: '-0.03em' }}>Список объектов</h2>
             {loading ? (
-              <div className="mt-6 text-slate-300">Загрузка объектов...</div>
+              <div className="mt-6 flex items-center gap-3 text-[14px]" style={{ color: 'var(--text-secondary)' }}>
+                <span className="h-4 w-4 animate-spin rounded-full border-2" style={{ borderColor: 'var(--border)', borderTopColor: '#d8b06a' }} />
+                Загрузка объектов...
+              </div>
             ) : error ? (
-              <div className="mt-6 text-red-400">{error}</div>
+              <div className="mt-6 text-[14px]" style={{ color: '#ff453a' }}>{error}</div>
             ) : (
-              <div className="mt-6 grid gap-4 xl:grid-cols-2">
+              <div className="mt-6 grid gap-5 xl:grid-cols-2">
                 {projects.map((project) => (
-                  <article key={project.id} className="rounded-3xl border border-slate-700 bg-slate-950/70 p-5">
+                  <article key={project.id} className="group rounded-[20px] p-6 transition-all duration-200 hover:scale-[1.01]" style={{ background: 'var(--bg-hover)', border: '1px solid var(--bg-subtle)' }}>
                     <div className="flex items-start justify-between gap-4">
-                      <div>
-                        <h3 className="text-xl font-semibold text-slate-100">{project.name}</h3>
-                        <p className="mt-2 text-sm text-slate-400">Клиент: {project.clientName}</p>
-                        <p className="mt-1 text-sm text-slate-400">Ответственный: {project.responsibleName}</p>
+                      <div className="min-w-0">
+                        <h3 className="truncate text-[16px] font-semibold" style={{ color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>{project.name}</h3>
+                        <p className="mt-1 text-[13px]" style={{ color: 'var(--text-secondary)' }}>Клиент: {project.clientName || '—'}</p>
+                        <div className="mt-1 flex items-center gap-2">
+                          <UserAvatar name={project.responsibleName ?? '?'} avatarUrl={project.responsibleAvatarUrl} size={22} />
+                          <p className="text-[13px]" style={{ color: 'var(--text-secondary)' }}>{project.responsibleName ?? 'Не назначен'}</p>
+                        </div>
                       </div>
-                      <div className="flex flex-col gap-2 items-end">
-                        <span className="rounded-full bg-slate-800 px-3 py-1 text-sm text-slate-300">{project.status}</span>
-                        <div className="flex gap-2">
-                          <button
-                            type="button"
-                            onClick={() => openEditProject(project)}
-                            className="rounded-2xl bg-sky-500 px-3 py-2 text-xs font-semibold text-slate-950 transition hover:bg-sky-400"
-                          >
-                            Редактировать
+                      <div className="flex shrink-0 flex-col items-end gap-2">
+                        <span className={`rounded-full px-3 py-1 text-[11px] font-medium ${STATUS_STYLE[project.status] ?? ''}`} style={!STATUS_STYLE[project.status] ? { background: 'var(--bg-subtle)', color: 'var(--text-secondary)' } : {}}>
+                          {STATUS_LABEL[project.status] ?? project.status}
+                        </span>
+                        <div className="flex gap-1.5">
+                          <button type="button" onClick={() => openEditProject(project)} className="rounded-[10px] px-3 py-1.5 text-[12px] font-medium transition-all duration-150" style={{ background: 'rgba(216,176,106,0.12)', color: '#d8b06a' }}>
+                            Изменить
                           </button>
-                          <button
-                            type="button"
-                            onClick={() => removeProject(project.id)}
-                            className="rounded-2xl bg-rose-600 px-3 py-2 text-xs font-semibold text-slate-100 transition hover:bg-rose-500"
-                          >
-                            Удалить
-                          </button>
+                          {confirmDeleteId === project.id ? (
+                            <>
+                              <button type="button" onClick={() => removeProject(project.id)} className="rounded-[10px] px-3 py-1.5 text-[12px] font-medium" style={{ background: 'rgba(255,69,58,0.22)', color: '#ff453a' }}>Да, удалить</button>
+                              <button type="button" onClick={() => setConfirmDeleteId(null)} className="rounded-[10px] px-3 py-1.5 text-[12px] font-medium" style={{ background: 'var(--bg-input)', color: 'var(--text-secondary)' }}>Отмена</button>
+                            </>
+                          ) : (
+                            <button type="button" onClick={() => setConfirmDeleteId(project.id)} className="rounded-[10px] px-3 py-1.5 text-[12px] font-medium transition-all duration-150" style={{ background: 'rgba(255,69,58,0.10)', color: '#ff453a' }}>
+                              Удалить
+                            </button>
+                          )}
                         </div>
                       </div>
                     </div>
-                    <div className="mt-5 grid gap-3 sm:grid-cols-2">
-                      <div className="rounded-2xl bg-slate-900/90 p-4">
-                        <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Бюджет</p>
-                        <p className="mt-2 text-lg font-semibold text-slate-100">{Number(project.budget).toLocaleString('ru-RU')} ₸</p>
+
+                    <div className="mt-5 grid grid-cols-2 gap-3">
+                      <div className="rounded-[12px] p-4" style={{ background: 'var(--bg-subtle)' }}>
+                        <p className="text-[11px] uppercase tracking-widest" style={{ color: 'var(--text-tertiary)' }}>Бюджет</p>
+                        <p className="mt-1.5 text-[15px] font-semibold" style={{ color: 'rgba(255,255,255,0.88)' }}>{Number(project.budget).toLocaleString('ru-RU')} ₸</p>
                       </div>
-                      <div className="rounded-2xl bg-slate-900/90 p-4">
-                        <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Прибыль</p>
-                        <p className="mt-2 text-lg font-semibold text-slate-100">{Number(project.profitEstimate ?? 0).toLocaleString('ru-RU')} ₸</p>
+                      <div className="rounded-[12px] p-4" style={{ background: 'var(--bg-subtle)' }}>
+                        <p className="text-[11px] uppercase tracking-widest" style={{ color: 'var(--text-tertiary)' }}>Прибыль</p>
+                        <p className="mt-1.5 text-[15px] font-semibold" style={{ color: '#d8b06a' }}>{Number(project.profitEstimate ?? 0).toLocaleString('ru-RU')} ₸</p>
                       </div>
                     </div>
-                    <div className="mt-5 flex flex-wrap gap-3 text-sm text-slate-400">
+
+                    <div className="mt-4 flex flex-wrap gap-3 text-[12px]" style={{ color: 'var(--text-tertiary)' }}>
                       <span>Старт: {project.startDate ?? '—'}</span>
                       <span>Финиш: {project.endDate ?? '—'}</span>
                     </div>
-                    <div className="mt-5 rounded-2xl bg-slate-900/90 p-4">
-                      <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Прогресс этапов</p>
-                      <div className="mt-3 h-3 overflow-hidden rounded-full bg-slate-800">
-                        <div className="h-full rounded-full bg-sky-500" style={{ width: `${project.stageProgress ?? 0}%` }} />
+
+                    <div className="mt-4 rounded-[12px] p-4" style={{ background: 'var(--bg-subtle)' }}>
+                      <div className="mb-2 flex items-center justify-between">
+                        <p className="text-[11px] uppercase tracking-widest" style={{ color: 'var(--text-tertiary)' }}>Прогресс этапов</p>
+                        <p className="text-[12px]" style={{ color: 'var(--text-secondary)' }}>{project.completedStages ?? 0}/{project.stageCount ?? 0}</p>
                       </div>
-                      <p className="mt-2 text-sm text-slate-400">{project.stageProgress ?? 0}% ({project.completedStages ?? 0}/{project.stageCount ?? 0})</p>
+                      <div className="h-1.5 overflow-hidden rounded-full" style={{ background: 'var(--bg-subtle)' }}>
+                        <div className="h-full rounded-full transition-all" style={{ width: `${project.stageProgress ?? 0}%`, background: 'linear-gradient(90deg, #d8b06a, #f1cd7f)' }} />
+                      </div>
+                      <p className="mt-1.5 text-[12px]" style={{ color: 'var(--text-tertiary)' }}>{project.stageProgress ?? 0}%</p>
                     </div>
                   </article>
                 ))}
+
+                {!projects.length && !loading ? (
+                  <div className="col-span-2 rounded-[20px] p-8 text-center text-[14px]" style={{ background: 'rgba(255,255,255,0.03)', border: '1px dashed var(--bg-subtle)', color: 'var(--text-tertiary)' }}>
+                    Объектов пока нет. Нажмите «Добавить объект», чтобы создать первый.
+                  </div>
+                ) : null}
               </div>
             )}
           </section>
+        </div>
 
-          {editingProject || isCreatingProject ? (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-6">
-              <div className="w-full max-w-3xl rounded-3xl border border-slate-700 bg-slate-900/95 p-8 shadow-2xl shadow-slate-950/40">
-                <div className="flex items-center justify-between gap-4">
-                  <div>
-                    <h2 className="text-2xl font-semibold text-white">{isCreatingProject ? 'Создать объект' : 'Редактировать объект'}</h2>
-                    <p className="mt-1 text-sm text-slate-400">{isCreatingProject ? 'Новый объект' : editingProject?.name}</p>
-                  </div>
-                  <button type="button" onClick={closeEditor} className="text-slate-400 transition hover:text-white">
-                    Закрыть
-                  </button>
+        {/* Modal */}
+        {editingProject || isCreatingProject ? (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' }}>
+            <div className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-[20px] sm:rounded-[28px] p-4 sm:p-8 shadow-2xl" style={{ background: 'rgba(28,28,30,0.96)', border: '1px solid var(--border)' }}>
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <h2 className="text-[24px] font-bold" style={{ color: 'var(--text-primary)', letterSpacing: '-0.03em' }}>
+                    {isCreatingProject ? 'Создать объект' : 'Редактировать объект'}
+                  </h2>
+                  <p className="mt-1 text-[14px]" style={{ color: 'var(--text-secondary)' }}>{isCreatingProject ? 'Новый объект' : editingProject?.name}</p>
                 </div>
+                <button type="button" onClick={closeEditor} className="rounded-[10px] p-2 transition-all duration-150" style={{ color: 'var(--text-secondary)' }}>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5"><path d="M18 6 6 18M6 6l12 12"/></svg>
+                </button>
+              </div>
 
-                <div className="mt-6 grid gap-6 md:grid-cols-2">
-                  <label className="space-y-2 text-sm text-slate-300">
-                    Название объекта
-                    <input
-                      value={editName}
-                      onChange={(event) => setEditName(event.target.value)}
-                      className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-slate-100 outline-none"
-                    />
-                  </label>
+              <div className="mt-6 grid gap-5 md:grid-cols-2">
+                <label className="space-y-2 text-[13px]" style={{ color: 'var(--text-secondary)' }}>
+                  Название объекта
+                  <input value={editName} onChange={(e) => setEditName(e.target.value)} className={INPUT_CLS} style={{ background: 'var(--bg-input)', border: '1px solid var(--border)' }} />
+                </label>
+                <label className="space-y-2 text-[13px]" style={{ color: 'var(--text-secondary)' }}>
+                  Клиент
+                  <input value={editClientName} onChange={(e) => setEditClientName(e.target.value)} className={INPUT_CLS} style={{ background: 'var(--bg-input)', border: '1px solid var(--border)' }} />
+                </label>
+                <label className="space-y-2 text-[13px]" style={{ color: 'var(--text-secondary)' }}>
+                  Бюджет (₸)
+                  <input type="number" min="0" value={editBudget} onChange={(e) => setEditBudget(e.target.value)} className={INPUT_CLS} style={{ background: 'var(--bg-input)', border: '1px solid var(--border)' }} />
+                </label>
+                <label className="space-y-2 text-[13px]" style={{ color: 'var(--text-secondary)' }}>
+                  Прибыль (₸)
+                  <input type="number" min="0" value={editProfitEstimate} onChange={(e) => setEditProfitEstimate(e.target.value)} className={INPUT_CLS} style={{ background: 'var(--bg-input)', border: '1px solid var(--border)' }} />
+                </label>
+                <label className="space-y-2 text-[13px]" style={{ color: 'var(--text-secondary)' }}>
+                  Статус
+                  <select value={editStatus} onChange={(e) => setEditStatus(e.target.value)} className={INPUT_CLS} style={{ background: 'var(--bg-input)', border: '1px solid var(--border)' }}>
+                    {PROJECT_STATUSES.map((s) => (
+                      <option key={s} value={s} className="bg-[#1c1c1e]">{STATUS_LABEL[s] ?? s}</option>
+                    ))}
+                  </select>
+                </label>
+                <label className="space-y-2 text-[13px]" style={{ color: 'var(--text-secondary)' }}>
+                  Ответственный
+                  <select value={editResponsibleId ?? ''} onChange={(e) => setEditResponsibleId(e.target.value ? Number(e.target.value) : null)} className={INPUT_CLS} style={{ background: 'var(--bg-input)', border: '1px solid var(--border)' }}>
+                    <option value="" className="bg-[#1c1c1e]">Не назначен</option>
+                    {users.map((u) => (
+                      <option key={u.id} value={u.id} className="bg-[#1c1c1e]">{u.full_name}</option>
+                    ))}
+                  </select>
+                </label>
+                <label className="space-y-2 text-[13px]" style={{ color: 'var(--text-secondary)' }}>
+                  Дата старта
+                  <input type="date" value={editStartDate} onChange={(e) => setEditStartDate(e.target.value)} className={INPUT_CLS} style={{ background: 'var(--bg-input)', border: '1px solid var(--border)' }} />
+                </label>
+                <label className="space-y-2 text-[13px]" style={{ color: 'var(--text-secondary)' }}>
+                  Дата завершения
+                  <input type="date" value={editEndDate} onChange={(e) => setEditEndDate(e.target.value)} className={INPUT_CLS} style={{ background: 'var(--bg-input)', border: '1px solid var(--border)' }} />
+                </label>
+              </div>
 
-                  <label className="space-y-2 text-sm text-slate-300">
-                    Клиент
-                    <input
-                      value={editClientName}
-                      onChange={(event) => setEditClientName(event.target.value)}
-                      className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-slate-100 outline-none"
-                    />
-                  </label>
-                </div>
+              {error ? <p className="mt-4 text-[13px]" style={{ color: '#ff453a' }}>{error}</p> : null}
 
-                <div className="mt-6 grid gap-6 md:grid-cols-2">
-                  <label className="space-y-2 text-sm text-slate-300">
-                    Бюджет
-                    <input
-                      type="number"
-                      min="0"
-                      value={editBudget}
-                      onChange={(event) => setEditBudget(event.target.value)}
-                      className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-slate-100 outline-none"
-                    />
-                  </label>
-
-                  <label className="space-y-2 text-sm text-slate-300">
-                    Прибыль
-                    <input
-                      type="number"
-                      min="0"
-                      value={editProfitEstimate}
-                      onChange={(event) => setEditProfitEstimate(event.target.value)}
-                      className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-slate-100 outline-none"
-                    />
-                  </label>
-                </div>
-
-                <div className="mt-6 grid gap-6 md:grid-cols-2">
-                  <label className="space-y-2 text-sm text-slate-300">
-                    Статус
-                    <select
-                      value={editStatus}
-                      onChange={(event) => setEditStatus(event.target.value)}
-                      className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-slate-100 outline-none"
-                    >
-                      {PROJECT_STATUSES.map((status) => (
-                        <option key={status} value={status} className="bg-slate-950 text-slate-100">
-                          {status}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-
-                  <label className="space-y-2 text-sm text-slate-300">
-                    Ответственный
-                    <select
-                      value={editResponsibleId ?? ''}
-                      onChange={(event) => setEditResponsibleId(event.target.value ? Number(event.target.value) : null)}
-                      className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-slate-100 outline-none"
-                    >
-                      <option value="">Не назначен</option>
-                      {users.map((user) => (
-                        <option key={user.id} value={user.id} className="bg-slate-950 text-slate-100">
-                          {user.full_name}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                </div>
-
-                <div className="mt-6 grid gap-6 md:grid-cols-2">
-                  <label className="space-y-2 text-sm text-slate-300">
-                    Дата старта
-                    <input
-                      type="date"
-                      value={editStartDate}
-                      onChange={(event) => setEditStartDate(event.target.value)}
-                      className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-slate-100 outline-none"
-                    />
-                  </label>
-
-                  <label className="space-y-2 text-sm text-slate-300">
-                    Дата завершения
-                    <input
-                      type="date"
-                      value={editEndDate}
-                      onChange={(event) => setEditEndDate(event.target.value)}
-                      className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-slate-100 outline-none"
-                    />
-                  </label>
-                </div>
-
-                {error ? <p className="mt-4 text-sm text-red-400">{error}</p> : null}
-
-                <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-end">
-                  <button
-                    type="button"
-                    onClick={closeEditor}
-                    className="rounded-2xl border border-slate-700 px-5 py-3 text-sm font-semibold text-slate-100 transition hover:bg-slate-800"
-                  >
-                    Отменить
-                  </button>
-                  <button
-                    type="button"
-                    onClick={saveProject}
-                    className="rounded-2xl bg-sky-500 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-sky-400"
-                  >
-                    Сохранить
-                  </button>
-                </div>
+              <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-end">
+                <button type="button" onClick={closeEditor} className="rounded-[14px] px-5 py-3 text-[14px] font-semibold transition-all duration-150" style={{ background: 'var(--bg-input)', border: '1px solid var(--border)', color: 'var(--text-secondary)' }}>
+                  Отменить
+                </button>
+                <button type="button" onClick={saveProject} className="rounded-[14px] px-5 py-3 text-[14px] font-semibold transition-all duration-150 hover:opacity-90" style={{ background: '#d8b06a', color: '#000000' }}>
+                  Сохранить
+                </button>
               </div>
             </div>
-          ) : null}
-        </div>
+          </div>
+        ) : null}
       </main>
     </ProtectedPage>
   );

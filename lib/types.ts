@@ -22,6 +22,7 @@ export interface User {
 
 export interface UserProfile extends User {
   roleName: RoleName;
+  avatarUrl?: string | null;
 }
 
 export interface EmployeeSummary {

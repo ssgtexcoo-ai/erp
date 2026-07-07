@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
 import { getUserProfile } from '@/lib/userService';
@@ -13,6 +13,7 @@ interface AuthContextValue {
   loading: boolean;
   error: string | null;
   signOut: () => Promise<void>;
+  refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -47,7 +48,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     initialize();
 
-    const { data: subscription } = supabase.auth.onAuthStateChange(async (event: string, session: Session | null) => {
+    const { data: subscription } = supabase.auth.onAuthStateChange(async (_event: string, session: Session | null) => {
       if (!session) {
         setSession(null);
         setUser(null);
@@ -70,16 +71,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  const signOut = async () => {
+  const signOut = useCallback(async () => {
     await supabase.auth.signOut();
     setSession(null);
     setUser(null);
     router.replace('/login');
-  };
+  }, [router]);
+
+  const refreshUser = useCallback(async () => {
+    const { data } = await supabase.auth.getSession();
+    if (!data.session) return;
+    const profileResponse = await getUserProfile(data.session.user.id);
+    if (!profileResponse.error) {
+      setUser(profileResponse.user ?? null);
+    }
+  }, []);
 
   const value = useMemo(
-    () => ({ session, user, loading, error, signOut }),
-    [session, user, loading, error, signOut],
+    () => ({ session, user, loading, error, signOut, refreshUser }),
+    [session, user, loading, error, signOut, refreshUser],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

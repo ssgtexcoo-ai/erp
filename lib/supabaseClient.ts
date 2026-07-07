@@ -25,11 +25,13 @@ type DemoTableName =
 	| 'document_categories'
 	| 'documents'
 	| 'notifications'
-	| 'employee_scores';
+	| 'employee_scores'
+	| 'activity_logs'
+	| 'company_settings';
 
 type SelectOptions = { count?: 'exact'; head?: boolean };
 type OrderOptions = { ascending?: boolean };
-type Filter = { type: 'eq' | 'neq' | 'in'; column: string; value: unknown };
+type Filter = { type: 'eq' | 'neq' | 'in' | 'lt' | 'lte' | 'gte' | 'gt' | 'ilike' | 'not_is_null' | 'or'; column: string; value: unknown };
 
 interface DemoSessionUser {
 	id: string;
@@ -66,6 +68,8 @@ interface DemoState {
 	documents: DemoRecord[];
 	notifications: DemoRecord[];
 	employee_scores: DemoRecord[];
+	activity_logs: DemoRecord[];
+	company_settings: DemoRecord[];
 }
 
 function clone<T>(value: T): T {
@@ -284,16 +288,25 @@ function buildDemoState(): DemoState {
 		documents,
 		notifications,
 		employee_scores: employeeScores,
+		activity_logs: [
+			{ id: 1, user_id: 1, action: 'created_deal', entity: 'deal', entity_id: 1, payload: { name: 'ТОО Самрук' }, created_at: new Date(Date.now() - 2 * 86400000).toISOString() },
+			{ id: 2, user_id: 2, action: 'moved_deal', entity: 'deal', entity_id: 1, payload: { from: 'Новая', to: 'Переговоры' }, created_at: new Date(Date.now() - 86400000).toISOString() },
+			{ id: 3, user_id: 1, action: 'created_lead', entity: 'lead', entity_id: 1, payload: { name: 'Арман Сейткали' }, created_at: new Date(Date.now() - 3 * 86400000).toISOString() },
+			{ id: 4, user_id: 2, action: 'completed_task', entity: 'task', entity_id: 1, payload: { title: 'Подготовить КП' }, created_at: new Date(Date.now() - 3600000).toISOString() },
+		],
+		company_settings: [
+			{ id: 1, company_name: 'SAMRUQ Qurylys', company_phone: '+7 777 123 45 67', company_address: 'г. Алматы, ул. Достык 123' },
+		],
 	};
 }
 
 const demoState = buildDemoState();
 
-const demoSessionUser: DemoSessionUser = {
+const demoSessionUser = {
 	id: demoState.users[0].auth_id,
 	email: demoState.users[0].email,
-	role: 'authenticated',
-	aud: 'authenticated',
+	role: 'authenticated' as const,
+	aud: 'authenticated' as const,
 	app_metadata: {},
 	user_metadata: {},
 	created_at: demoState.users[0].created_at,
@@ -331,12 +344,25 @@ function nextId(table: DemoTableName) {
 	return rows.reduce((max, row) => Math.max(max, Number(row.id ?? 0)), 0) + 1;
 }
 
-function matchesFilters(row: DemoRecord, filters: Filter[]) {
-	return filters.every((filter) => {
+function matchesFilters(row: DemoRecord, filters: Filter[]): boolean {
+	return filters.every((filter): boolean => {
 		const value = row[filter.column];
 		if (filter.type === 'eq') return value === filter.value;
 		if (filter.type === 'neq') return value !== filter.value;
 		if (filter.type === 'in') return Array.isArray(filter.value) && filter.value.includes(value);
+		if (filter.type === 'lt') return value != null && value < (filter.value as string | number);
+		if (filter.type === 'lte') return value != null && value <= (filter.value as string | number);
+		if (filter.type === 'gte') return value != null && value >= (filter.value as string | number);
+		if (filter.type === 'gt') return value != null && value > (filter.value as string | number);
+		if (filter.type === 'ilike') {
+			const pattern = String(filter.value ?? '').replace(/%/g, '');
+			return String(value ?? '').toLowerCase().includes(pattern.toLowerCase());
+		}
+		if (filter.type === 'not_is_null') return value != null;
+		if (filter.type === 'or') {
+			const subFilters = filter.value as Filter[];
+			return subFilters.some((sub): boolean => matchesFilters(row, [sub]));
+		}
 		return true;
 	});
 }
@@ -478,10 +504,14 @@ class DemoQueryBuilder {
 
 	private singleMode = false;
 
+	private isMutation = false;
+
 	constructor(private readonly table: DemoTableName) {}
 
 	select(_columns = '*', options: SelectOptions = {}) {
-		this.action = 'select';
+		if (!this.isMutation) {
+			this.action = 'select';
+		}
 		this.selectOptions = options;
 		return this;
 	}
@@ -489,17 +519,20 @@ class DemoQueryBuilder {
 	insert(values: DemoRecord | DemoRecord[]) {
 		this.action = 'insert';
 		this.payload = values;
+		this.isMutation = true;
 		return this;
 	}
 
 	update(values: DemoRecord) {
 		this.action = 'update';
 		this.payload = values;
+		this.isMutation = true;
 		return this;
 	}
 
 	delete() {
 		this.action = 'delete';
+		this.isMutation = true;
 		return this;
 	}
 
@@ -515,6 +548,57 @@ class DemoQueryBuilder {
 
 	in(column: string, values: unknown[]) {
 		this.filters.push({ type: 'in', column, value: values });
+		return this;
+	}
+
+	lt(column: string, value: unknown) {
+		this.filters.push({ type: 'lt', column, value });
+		return this;
+	}
+
+	lte(column: string, value: unknown) {
+		this.filters.push({ type: 'lte', column, value });
+		return this;
+	}
+
+	gte(column: string, value: unknown) {
+		this.filters.push({ type: 'gte', column, value });
+		return this;
+	}
+
+	gt(column: string, value: unknown) {
+		this.filters.push({ type: 'gt', column, value });
+		return this;
+	}
+
+	ilike(column: string, pattern: string) {
+		this.filters.push({ type: 'ilike', column, value: pattern });
+		return this;
+	}
+
+	or(query: string) {
+		// Parse PostgREST or() string like "col1.ilike.%x%,col2.ilike.%x%"
+		const subFilters: Filter[] = query.split(',').map((part) => {
+			const [col, op, ...rest] = part.trim().split('.');
+			const val = rest.join('.');
+			return { type: (op ?? 'eq') as Filter['type'], column: col ?? '', value: val };
+		});
+		this.filters.push({ type: 'or', column: '', value: subFilters });
+		return this;
+	}
+
+	not(column: string, operator: string, _value: unknown) {
+		if (operator === 'is') {
+			this.filters.push({ type: 'not_is_null', column, value: null });
+		}
+		return this;
+	}
+
+	limit(_count: number) {
+		return this;
+	}
+
+	range(_from: number, _to: number) {
 		return this;
 	}
 
