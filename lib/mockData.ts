@@ -1,4 +1,4 @@
-import type { LeadStatus, Project, Task, Deal, Lead, DocumentRecord, NotificationRecord } from '@/lib/types';
+import type { Project, Task, Deal, Lead, DocumentRecord, NotificationRecord } from '@/lib/types';
 
 export const sampleLeads: Lead[] = [
   {
@@ -140,7 +140,7 @@ export const sampleDocuments: DocumentRecord[] = [
     dealId: 1,
     category: 'Договор',
     name: 'Договор поставки и монтажа.pdf',
-    fileUrl: '#',
+    fileUrl: 'https://www.w3.org/WAI/WCAG21/Techniques/pdf/pdf-sample.pdf',
     uploadedBy: 4,
     uploadedAt: '2026-06-17T11:00:00Z',
   },
@@ -150,7 +150,7 @@ export const sampleDocuments: DocumentRecord[] = [
     dealId: 1,
     category: 'Чертеж',
     name: 'Схема фундамента.pdf',
-    fileUrl: '#',
+    fileUrl: 'https://www.w3.org/WAI/WCAG21/Techniques/pdf/pdf-sample.pdf',
     uploadedBy: 5,
     uploadedAt: '2026-06-17T11:20:00Z',
   },

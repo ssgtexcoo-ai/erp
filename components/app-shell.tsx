@@ -2,8 +2,10 @@
 
 import { usePathname } from 'next/navigation';
 import { Sidebar } from '@/components/sidebar';
+import { MobileNav } from '@/components/mobile-nav';
+import { GlobalSearch } from '@/components/global-search';
 
-const NO_SIDEBAR_PATHS = ['/', '/login', '/unauthorized'];
+const NO_SIDEBAR_PATHS = ['/login', '/unauthorized'];
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -16,9 +18,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-screen">
       <Sidebar />
-      <div className="ml-64 flex min-h-screen flex-1 flex-col min-w-0">
+      <div className="md:ml-[240px] flex min-h-screen flex-1 flex-col min-w-0 pb-[64px] md:pb-0">
         {children}
       </div>
+      <MobileNav />
+      <GlobalSearch />
     </div>
   );
 }

@@ -11,10 +11,14 @@
     "test": "npm run test:integration"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.105.0",
     "@supabase/supabase-js": "^2.36.0",
+    "@xyflow/react": "^12.11.1",
     "next": "14.2.5",
+    "next-themes": "^0.4.6",
     "react": "18.3.1",
-    "react-dom": "18.3.1"
+    "react-dom": "18.3.1",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@types/node": "^20.14.0",
