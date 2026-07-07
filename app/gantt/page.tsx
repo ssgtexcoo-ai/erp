@@ -255,8 +255,8 @@ export default function GanttPage() {
             ) : (
               <div className="overflow-x-auto">
                 {/* Timeline header */}
-                <div className="grid gap-0 border-b border-slate-700" style={{ gridTemplateColumns: '300px 1fr' }}>
-                  <div className="border-r border-slate-700 px-5 py-3 text-xs uppercase tracking-widest text-slate-500">Проект</div>
+                <div className="grid gap-0 border-b border-slate-700" style={{ gridTemplateColumns: '300px minmax(600px,1fr)' }}>
+                  <div className="sticky left-0 z-20 border-r border-slate-700 bg-slate-900 px-5 py-3 text-xs uppercase tracking-widest text-slate-500">Проект</div>
                   <div className="relative px-2 py-3">
                     <div className="flex">
                       {ticks.map((tick) => (
@@ -290,10 +290,10 @@ export default function GanttPage() {
                   return (
                     <div key={project.id} className="border-b border-slate-800 last:border-b-0">
                       {/* Main row */}
-                      <div className="grid min-h-[120px]" style={{ gridTemplateColumns: '300px 1fr' }}>
+                      <div className="grid min-h-[120px]" style={{ gridTemplateColumns: '300px minmax(600px,1fr)' }}>
 
                         {/* LEFT PANEL — Bitrix-style contact card */}
-                        <div className="border-r border-slate-800 p-4 flex flex-col gap-3">
+                        <div className="sticky left-0 z-10 border-r border-slate-800 bg-slate-900/95 p-4 flex flex-col gap-3">
                           <div className="flex items-start gap-3">
                             {/* Avatar with initials */}
                             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-sky-500/20 text-sm font-bold text-sky-100">
@@ -409,8 +409,8 @@ export default function GanttPage() {
                             const isLate = dueDate && task.status !== 'Выполнено' && dueDate.getTime() < Date.now();
 
                             return (
-                              <div key={task.id} className="grid border-b border-slate-800/50 last:border-b-0" style={{ gridTemplateColumns: '300px 1fr' }}>
-                                <div className="flex items-center gap-3 border-r border-slate-800 px-4 py-2.5">
+                              <div key={task.id} className="grid border-b border-slate-800/50 last:border-b-0" style={{ gridTemplateColumns: '300px minmax(600px,1fr)' }}>
+                                <div className="sticky left-0 z-10 flex items-center gap-3 border-r border-slate-800 bg-slate-950/60 px-4 py-2.5">
                                   <div className={`h-1.5 w-1.5 rounded-full shrink-0 ${task.status === 'Выполнено' ? 'bg-emerald-400' : isLate ? 'bg-rose-400' : 'bg-violet-400'}`} />
                                   <div className="min-w-0">
                                     <p className="truncate text-xs text-slate-300">{task.title}</p>
