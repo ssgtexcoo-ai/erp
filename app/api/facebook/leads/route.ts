@@ -1,11 +1,13 @@
 import { createClient } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
 
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  { auth: { autoRefreshToken: false, persistSession: false } },
-);
+function createAdmin() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL ?? '',
+    process.env.SUPABASE_SERVICE_ROLE_KEY ?? '',
+    { auth: { autoRefreshToken: false, persistSession: false } },
+  );
+}
 
 // GET — Facebook webhook verification
 export async function GET(req: NextRequest) {
@@ -29,6 +31,8 @@ export async function POST(req: NextRequest) {
   if (!pageToken) {
     return NextResponse.json({ error: 'FACEBOOK_PAGE_ACCESS_TOKEN not set' }, { status: 500 });
   }
+
+  const supabaseAdmin = createAdmin();
 
   try {
     for (const entry of (body.entry ?? []) as any[]) {
