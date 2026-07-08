@@ -16,8 +16,8 @@ export default function ResetPasswordPage() {
         setReady(true);
       }
     });
-    supabase.auth.getSession().then((res) => {
-      if (res.data.session) setReady(true);
+    supabase.auth.getSession().then(({ data }) => {
+      if (data.session) setReady(true);
     });
     return () => subscription.unsubscribe();
   }, []);
