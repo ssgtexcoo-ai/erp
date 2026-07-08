@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, type FormEvent } from 'react';
+import { useState, useEffect, type FormEvent } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 
 export function LoginForm() {
@@ -8,21 +8,33 @@ export function LoginForm() {
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
+  const [slow, setSlow] = useState(false);
+
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'SIGNED_IN') {
+        window.location.href = '/dashboard';
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, []);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setLoading(true);
+    setSlow(false);
     setMessage('');
 
+    const slowTimer = setTimeout(() => setSlow(true), 6000);
     const { error } = await supabase.auth.signInWithPassword({ email, password });
+    clearTimeout(slowTimer);
 
     if (error) {
       setMessage(error.message === 'Invalid login credentials'
         ? 'Неверный email или пароль'
         : error.message);
       setLoading(false);
-    } else {
-      window.location.href = '/dashboard';
+      setSlow(false);
     }
   };
 
@@ -116,6 +128,12 @@ export function LoginForm() {
                 </>
               ) : 'Войти'}
             </button>
+
+            {slow && (
+              <p className="text-center text-[12px]" style={{ color: 'var(--text-tertiary)' }}>
+                Сервер просыпается, подождите ещё немного...
+              </p>
+            )}
           </form>
         </div>
 
