@@ -26,6 +26,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
 
   useEffect(() => {
+    // Redirect immediately if this is a password recovery link (hash contains type=recovery)
+    if (typeof window !== 'undefined' && window.location.hash.includes('type=recovery')) {
+      window.location.href = '/reset-password' + window.location.hash;
+      return;
+    }
+
     const initialize = async () => {
       setLoading(true);
       const { data } = await supabase.auth.getSession();
@@ -49,8 +55,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     initialize();
 
     const { data: subscription } = supabase.auth.onAuthStateChange(async (event: string, session: Session | null) => {
-      if (event === 'PASSWORD_RECOVERY') {
-        window.location.href = '/reset-password';
+      const isRecovery =
+        event === 'PASSWORD_RECOVERY' ||
+        (typeof window !== 'undefined' && window.location.hash.includes('type=recovery'));
+
+      if (isRecovery) {
+        window.location.href = '/reset-password' + window.location.hash;
         return;
       }
 
