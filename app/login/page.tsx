@@ -24,19 +24,11 @@ export default function LoginPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-slate-950 text-slate-100 px-6 py-10">
-        <div className="mx-auto max-w-3xl rounded-3xl border border-slate-700 bg-slate-900/90 p-10 text-center text-slate-300 shadow-2xl shadow-slate-950/30">
-          Загрузка...
-        </div>
-      </main>
+      <div className="flex min-h-screen items-center justify-center" style={{ background: '#0b1020' }}>
+        <div className="h-6 w-6 animate-spin rounded-full border-2" style={{ borderColor: 'rgba(216,176,106,0.2)', borderTopColor: '#d8b06a' }} />
+      </div>
     );
   }
 
-  return (
-    <main className="min-h-screen bg-slate-950 text-slate-100 px-6 py-10">
-      <div className="mx-auto max-w-3xl">
-        <LoginForm />
-      </div>
-    </main>
-  );
+  return <LoginForm />;
 }
