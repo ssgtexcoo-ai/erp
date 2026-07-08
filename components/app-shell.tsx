@@ -5,7 +5,7 @@ import { Sidebar } from '@/components/sidebar';
 import { MobileNav } from '@/components/mobile-nav';
 import { GlobalSearch } from '@/components/global-search';
 
-const NO_SIDEBAR_PATHS = ['/login', '/unauthorized', '/reset-password'];
+const NO_SIDEBAR_PATHS = ['/login', '/unauthorized', '/reset-password', '/director-setup'];
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
