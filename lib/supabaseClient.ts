@@ -672,6 +672,32 @@ function createDemoSupabase() {
 			async getSession() {
 				return { data: { session: currentDemoSession }, error: null };
 			},
+			async signInWithPassword({ email }: { email: string; password: string }) {
+				const matchedUser = demoState.users.find((user) => user.email === email);
+				if (!matchedUser) {
+					return { data: { session: null }, error: new Error('Invalid login credentials') };
+				}
+				currentDemoSession = {
+					access_token: `demo-access-${matchedUser.id}`,
+					token_type: 'bearer',
+					expires_in: 24 * 60 * 60,
+					expires_at: Math.floor(Date.now() / 1000) + 24 * 60 * 60,
+					refresh_token: `demo-refresh-${matchedUser.id}`,
+					provider_token: null,
+					provider_refresh_token: null,
+					user: {
+						id: matchedUser.auth_id,
+						email: matchedUser.email,
+						role: 'authenticated',
+						aud: 'authenticated',
+						app_metadata: {},
+						user_metadata: {},
+						created_at: matchedUser.created_at,
+					} as any,
+				} as Session;
+				notifyAuth('SIGNED_IN', currentDemoSession);
+				return { data: { session: currentDemoSession }, error: null };
+			},
 			async signInWithOtp({ email }: { email: string }) {
 				const matchedUser = demoState.users.find((user) => user.email === email) ?? demoState.users[0];
 				currentDemoSession = {

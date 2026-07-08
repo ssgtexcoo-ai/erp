@@ -36,7 +36,13 @@ export function LoginForm() {
     setLoading(true);
     setMessage('');
 
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    let error: Error | null = null;
+    try {
+      const result = await supabase.auth.signInWithPassword({ email, password });
+      error = result.error ?? null;
+    } catch (e: unknown) {
+      error = e instanceof Error ? e : new Error(String(e));
+    }
 
     if (error) {
       setMessage(error.message === 'Invalid login credentials'
