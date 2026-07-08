@@ -11,15 +11,15 @@ export interface EmployeeWithScore {
 }
 
 export async function fetchEmployees() {
-  const [{ data: users, error: usersError }, { data: scores, error: scoresError }] = await Promise.all([
+  const [{ data: users, error: usersError }, { data: scores }] = await Promise.all([
     supabase.from('users').select('id, auth_id, full_name, avatar_url, roles(name)'),
     supabase.from('employee_scores').select('user_id, score'),
   ]);
 
-  if (usersError || scoresError) {
+  if (usersError) {
     return {
       employees: [] as EmployeeWithScore[],
-      error: usersError || scoresError,
+      error: usersError,
     };
   }
 

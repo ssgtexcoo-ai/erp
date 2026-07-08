@@ -12,6 +12,7 @@ create table users (
   email text not null unique,
   full_name text not null,
   role_id int references roles(id),
+  avatar_url text,
   is_active boolean not null default true,
   created_at timestamptz not null default now()
 );
