@@ -3,12 +3,16 @@
 import { useState, useEffect, useRef, type FormEvent } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 
+const SITE_URL = 'https://erp-samruq.vercel.app';
+
 export function LoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const [elapsed, setElapsed] = useState(0);
+  const [forgotSent, setForgotSent] = useState(false);
+  const [forgotLoading, setForgotLoading] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
@@ -32,6 +36,18 @@ export function LoginForm() {
     }
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, [loading]);
+
+  const handleForgotPassword = async () => {
+    if (!email) { setMessage('Введите email выше'); return; }
+    setForgotLoading(true);
+    setMessage('');
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${SITE_URL}/reset-password`,
+    });
+    setForgotLoading(false);
+    if (error) { setMessage(error.message); return; }
+    setForgotSent(true);
+  };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -131,6 +147,27 @@ export function LoginForm() {
 
             {message && (
               <p className="text-[13px]" style={{ color: '#ff453a' }}>{message}</p>
+            )}
+
+            {forgotSent ? (
+              <div className="rounded-[12px] px-4 py-3 text-center" style={{ background: 'rgba(48,209,88,0.10)', border: '1px solid rgba(48,209,88,0.25)' }}>
+                <p className="text-[13px] font-medium" style={{ color: '#30d158' }}>
+                  ✓ Письмо отправлено — проверьте почту
+                </p>
+                <p className="mt-1 text-[11px]" style={{ color: 'var(--text-tertiary)' }}>
+                  Ссылка ведёт на страницу смены пароля
+                </p>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={handleForgotPassword}
+                disabled={forgotLoading}
+                className="w-full text-center text-[13px] disabled:opacity-40"
+                style={{ color: 'var(--text-tertiary)', background: 'none', border: 'none', cursor: 'pointer' }}
+              >
+                {forgotLoading ? 'Отправка...' : 'Забыли пароль?'}
+              </button>
             )}
 
             <button
