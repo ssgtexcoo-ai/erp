@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, type FormEvent } from 'react';
+import { useState, useEffect, useRef, type FormEvent } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 
 export function LoginForm() {
@@ -8,7 +8,8 @@ export function LoginForm() {
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
-  const [slow, setSlow] = useState(false);
+  const [elapsed, setElapsed] = useState(0);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: string, session: unknown) => {
@@ -19,22 +20,29 @@ export function LoginForm() {
     return () => subscription.unsubscribe();
   }, []);
 
+  useEffect(() => {
+    if (loading) {
+      setElapsed(0);
+      timerRef.current = setInterval(() => setElapsed((s) => s + 1), 1000);
+    } else {
+      if (timerRef.current) clearInterval(timerRef.current);
+      setElapsed(0);
+    }
+    return () => { if (timerRef.current) clearInterval(timerRef.current); };
+  }, [loading]);
+
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setLoading(true);
-    setSlow(false);
     setMessage('');
 
-    const slowTimer = setTimeout(() => setSlow(true), 6000);
     const { error } = await supabase.auth.signInWithPassword({ email, password });
-    clearTimeout(slowTimer);
 
     if (error) {
       setMessage(error.message === 'Invalid login credentials'
         ? 'Неверный email или пароль'
         : error.message);
       setLoading(false);
-      setSlow(false);
     }
   };
 
@@ -86,6 +94,7 @@ export function LoginForm() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                disabled={loading}
                 placeholder="ivan@samruq.kz"
                 className="w-full rounded-[14px] px-4 py-3 text-[15px] outline-none transition-all duration-200"
                 style={{ background: 'var(--bg-input)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
@@ -103,6 +112,7 @@ export function LoginForm() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                disabled={loading}
                 placeholder="••••••••"
                 className="w-full rounded-[14px] px-4 py-3 text-[15px] outline-none transition-all duration-200"
                 style={{ background: 'var(--bg-input)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
@@ -124,15 +134,20 @@ export function LoginForm() {
               {loading ? (
                 <>
                   <span className="h-4 w-4 animate-spin rounded-full border-2" style={{ borderColor: 'rgba(0,0,0,0.25)', borderTopColor: '#000000' }} />
-                  Вход...
+                  Вход... {elapsed > 0 ? `${elapsed}с` : ''}
                 </>
               ) : 'Войти'}
             </button>
 
-            {slow && (
-              <p className="text-center text-[12px]" style={{ color: 'var(--text-tertiary)' }}>
-                Сервер просыпается, подождите ещё немного...
-              </p>
+            {loading && elapsed >= 5 && (
+              <div className="rounded-[12px] px-4 py-3 text-center" style={{ background: 'rgba(216,176,106,0.10)', border: '1px solid rgba(216,176,106,0.25)' }}>
+                <p className="text-[12px] font-medium" style={{ color: '#d8b06a' }}>
+                  Сервер просыпается — не обновляйте страницу!
+                </p>
+                <p className="mt-1 text-[11px]" style={{ color: 'var(--text-tertiary)' }}>
+                  Первый вход занимает до 30 секунд
+                </p>
+              </div>
             )}
           </form>
         </div>
