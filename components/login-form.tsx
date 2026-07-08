@@ -12,8 +12,10 @@ export function LoginForm() {
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: string, session: unknown) => {
-      if (session) {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event: string, session: unknown) => {
+      if (event === 'PASSWORD_RECOVERY') {
+        window.location.href = '/reset-password';
+      } else if (session) {
         window.location.href = '/dashboard';
       }
     });
