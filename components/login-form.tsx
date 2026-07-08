@@ -11,8 +11,8 @@ export function LoginForm() {
   const [slow, setSlow] = useState(false);
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'SIGNED_IN') {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: string, session: unknown) => {
+      if (session) {
         window.location.href = '/dashboard';
       }
     });
