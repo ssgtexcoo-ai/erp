@@ -2,7 +2,7 @@
 const nextConfig = {
   reactStrictMode: true,
   typescript: { ignoreBuildErrors: true },
-  eslint: { ignoreDuringBuilds: true },
+  turbopack: { root: '.' },
 
   async headers() {
     return [
@@ -16,12 +16,6 @@ const nextConfig = {
         ],
       },
     ];
-  },
-
-  // Suppress noisy Supabase realtime warnings in dev
-  webpack(config) {
-    config.resolve.fallback = { ...config.resolve.fallback, fs: false };
-    return config;
   },
 };
 
